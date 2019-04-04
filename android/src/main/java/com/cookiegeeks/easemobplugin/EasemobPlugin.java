@@ -37,6 +37,7 @@ public class EasemobPlugin implements MethodCallHandler, StreamHandler {
     public void onMethodCall(MethodCall call, Result result) {
         String toChatUsername=call.argument("toChatUsername");
         Boolean isGroupChat= call.argument("isGroupChat")==null?false:(Boolean)call.argument("isGroupChat");
+        String conversation = call.argument("conversation");
         switch (call.method) {
             case "init":
                 String appKey = call.argument("appKey");
@@ -56,7 +57,6 @@ public class EasemobPlugin implements MethodCallHandler, StreamHandler {
                 break;
 
             case "getConversationUnreadMessageCount":
-                String conversation = call.argument("conversation");
                 easemobClient.getConversationUnreadMessageCount(conversation, result);
                 break;
 
@@ -64,6 +64,16 @@ public class EasemobPlugin implements MethodCallHandler, StreamHandler {
                 easemobClient.getUnreadMessageCount(result);
                 break;
 
+            case "sendTextMessage":
+                String content = call.argument("content");
+                easemobClient.sendTextMessage(conversation, content, isGroupChat, result);
+                break;
+
+            case "getConversationMessages":
+                String startMessageId = call.argument("startMessageId");
+                int pageSize = call.argument("pageSize");
+                result.success(easemobClient.getConversationMessages(conversation, startMessageId, pageSize));
+                break;
             default:
                 result.notImplemented();
         }

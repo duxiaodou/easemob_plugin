@@ -79,15 +79,43 @@ class EasemobPlugin {
 
   }
 
+  /*
+    获取未读消息数量
+   */
   static Future<int> getUnreadMessageCount() async {
     try {
       return await _methodChannel
           .invokeMethod("getUnreadMessageCount");
     } on PlatformException catch (e) {
-      return await 0;
+      return  0;
     }
 
   }
+
+  /*
+    发送文本消息
+   */
+   static Future<bool> sendTextMessage(String conversation, String content, bool isGroupChat) async {
+     try {
+       return await _methodChannel
+           .invokeMethod("sendTextMessage", {"conversation": conversation, "content": content, "isGroupChat": isGroupChat});
+     } on PlatformException catch (e) {
+       return false;
+     }
+   }
+
+   /*
+      获取会话消息
+    */
+    static Future<List<dynamic>> getConversationMessages(String conversation, String startMessageId, int pageSize) async {
+      try {
+        return await _methodChannel
+            .invokeMethod("getConversationMessages", {"conversation": conversation, "startMessageId": startMessageId, "pageSize": pageSize});
+      } on PlatformException catch (e) {
+        return null;
+      }
+    }
+
 
 //
   void setOnMessageReceived(onMessageReceived) {

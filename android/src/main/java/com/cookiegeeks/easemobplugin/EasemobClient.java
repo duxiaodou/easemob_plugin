@@ -7,10 +7,12 @@ import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessage.ChatType;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.util.EMLog;
 
 import org.json.JSONObject;
 
@@ -36,6 +38,7 @@ public class EasemobClient {
         EMOptions options = new EMOptions();
         options.setAppKey(appKey);
         options.setAcceptInvitationAlways(false);
+        options.setRequireAck(true);
         EMClient.getInstance().init(context, options);
         EMClient.getInstance().setDebugMode(isDebug);
         return true;
@@ -151,6 +154,42 @@ public class EasemobClient {
      */
     public void getUnreadMessageCount(final Result result) {
         result.success(EMClient.getInstance().chatManager().getUnreadMsgsCount());
+    }
+
+    /*
+        发送文本消息
+     */
+    public void sendTextMessage(String conversation, String content, boolean isGroupChat, final Result result) {
+        EMMessage message = EMMessage.createTxtSendMessage(content, conversation);
+        if (isGroupChat) {
+            message.setChatType(ChatType.GroupChat);
+        }
+        EMClient.getInstance().chatManager().sendMessage(message);
+        result.success(true);
+    }
+
+    public  ArrayList<Map<String, String>> getConversationMessages(String conversation, String startMessageId, int pageSize) {
+        EMConversation emConversation = EMClient.getInstance().chatManager().getConversation(conversation);
+        if (emConversation == null) {
+            return null;
+        }
+        List<EMMessage> unConvertedMessages = emConversation.getAllMessages();
+        ArrayList<Map<String, String>> messages = new ArrayList<Map<String, String>>();
+        for ( EMMessage message :  unConvertedMessages) {
+            EMTextMessageBody body = (EMTextMessageBody) message.getBody();
+            Map<String, String> event = new HashMap<>();
+            event.put("id", message.getMsgId());
+            event.put("from", message.getFrom());
+            event.put("to", message.getTo());
+            event.put("eventType", "onMessageReceived");
+            event.put("body", body.toString());
+            event.put("chatType", message.getChatType().toString());
+            event.put("timestamp", Long.toString(message.getMsgTime()));
+            event.put("ext", new JSONObject(message.ext()).toString());
+            event.put("type", message.getType().toString());
+            messages.add(event);
+        }
+        return messages;
     }
 
 
