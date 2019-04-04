@@ -66,6 +66,29 @@ class EasemobPlugin {
 
   }
 
+  /*
+    获取会话未读消息数量
+   */
+  static Future<int> getConversationUnreadMessageCount(String conversation) async {
+    try {
+      return await _methodChannel
+          .invokeMethod("getConversationUnreadMessageCount", {"conversation": conversation});
+    } on PlatformException catch (e) {
+      return await 0;
+    }
+
+  }
+
+  static Future<int> getUnreadMessageCount() async {
+    try {
+      return await _methodChannel
+          .invokeMethod("getUnreadMessageCount");
+    } on PlatformException catch (e) {
+      return await 0;
+    }
+
+  }
+
 //
   void setOnMessageReceived(onMessageReceived) {
     this._onMessageReceived = onMessageReceived;

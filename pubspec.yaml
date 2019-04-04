@@ -2,6 +2,7 @@ name: easemob_plugin
 description: Flutter Easemob  SDK
 version: 0.0.1
 author: duxiaodou
+email: badtudou@gmail.com
 homepage: https://github.com/duxiaodou/easemob_plugin
 
 environment:

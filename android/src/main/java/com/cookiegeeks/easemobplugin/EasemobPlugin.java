@@ -55,6 +55,15 @@ public class EasemobPlugin implements MethodCallHandler, StreamHandler {
                 easemobClient.logout(isUnbundle, result);
                 break;
 
+            case "getConversationUnreadMessageCount":
+                String conversation = call.argument("conversation");
+                easemobClient.getConversationUnreadMessageCount(conversation, result);
+                break;
+
+            case "getUnreadMessageCount":
+                easemobClient.getUnreadMessageCount(result);
+                break;
+
             default:
                 result.notImplemented();
         }

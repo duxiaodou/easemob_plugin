@@ -10,6 +10,7 @@ import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
+import com.hyphenate.chat.EMConversation;
 
 import org.json.JSONObject;
 
@@ -43,7 +44,7 @@ public class EasemobClient {
     /*
         登录
      */
-    public void login(String username, String password, final Result result) {
+    public void login(final String username, final String password, final Result result) {
         EMClient.getInstance().login(username, password, new EMCallBack() {//回调
             @Override
             public void onSuccess() {
@@ -108,7 +109,7 @@ public class EasemobClient {
                         event.put("body", body.toString());
                         event.put("chatType", message.getChatType().toString());
                         event.put("timestamp", message.getMsgTime());
-                        event.put("ext", message.ext());
+                        event.put("ext", new JSONObject(message.ext()).toString());
                         event.put("type", message.getType().toString());
                         eventSink.success(event);
                 }
@@ -117,17 +118,17 @@ public class EasemobClient {
 
             @Override
             public void onCmdMessageReceived(List<EMMessage> messages) {
-
+                // 收到已透传回执
             }
 
             @Override
             public void onMessageRead(List<EMMessage> messages) {
-
+                // 收到已读回执
             }
 
             @Override
             public void onMessageDelivered(List<EMMessage> messages) {
-
+                // 收到已送到回执
             }
 
             @Override
@@ -136,6 +137,20 @@ public class EasemobClient {
             }
         };
         EMClient.getInstance().chatManager().addMessageListener(msgListener);
+    }
+
+    /*
+        获取会话未读消息数量
+     */
+    public void getConversationUnreadMessageCount(String conversation, final Result result) {
+        result.success(EMClient.getInstance().chatManager().getConversation(conversation).getUnreadMsgCount());
+    }
+
+    /*
+        获取未读消息数量
+     */
+    public void getUnreadMessageCount(final Result result) {
+        result.success(EMClient.getInstance().chatManager().getUnreadMsgsCount());
     }
 
 

@@ -35,6 +35,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.hyphenate:hyphenate-sdk:3.3.0'
+    //compile 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.hyphenate:hyphenate-sdk-lite:3.3.0'
 }
 
