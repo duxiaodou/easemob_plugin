@@ -116,6 +116,31 @@ class EasemobPlugin {
       }
     }
 
+    /*
+      将会话所有消息设置已已读
+     */
+    static void markConversatioAllMessagesAsRead(String conversation) async {
+      return await _methodChannel
+        .invokeMethod("markConversatioAllMessagesAsRead", {"conversation": conversation});
+    }
+
+    /*
+        将所有消息设置已已读
+     */
+    static void markAllMessagesAsRead() async {
+      return await _methodChannel
+        .invokeMethod("markAllMessagesAsRead");
+    }
+
+    /*
+      将会话某个消息设置为已读
+     */
+    static void markConversationsMessageAsRead(String conversation, String messageId) async {
+      return await _methodChannel
+        .invokeMethod("markConversationsMessageAsRead", {"conversation": conversation, "messageId": messageId});
+    }
+
+
 
 //
   void setOnMessageReceived(onMessageReceived) {

@@ -109,7 +109,7 @@ public class EasemobClient {
                         event.put("from", message.getFrom());
                         event.put("to", message.getTo());
                         event.put("eventType", "onMessageReceived");
-                        event.put("body", body.toString());
+                        event.put("body", body.getMessage());
                         event.put("chatType", message.getChatType().toString());
                         event.put("timestamp", message.getMsgTime());
                         event.put("ext", new JSONObject(message.ext()).toString());
@@ -122,20 +122,77 @@ public class EasemobClient {
             @Override
             public void onCmdMessageReceived(List<EMMessage> messages) {
                 // 收到已透传回执
+                for (EMMessage message : messages) {
+
+                    EMTextMessageBody body = (EMTextMessageBody) message.getBody();
+                    Map<String, Object> event = new HashMap<>();
+                    event.put("id", message.getMsgId());
+                    event.put("from", message.getFrom());
+                    event.put("to", message.getTo());
+                    event.put("eventType", "onMessageReceived");
+                    event.put("body", body.getMessage());
+                    event.put("chatType", message.getChatType().toString());
+                    event.put("timestamp", message.getMsgTime());
+                    event.put("ext", new JSONObject(message.ext()).toString());
+                    event.put("type", message.getType().toString());
+                    eventSink.success(event);
+                }
             }
 
             @Override
             public void onMessageRead(List<EMMessage> messages) {
                 // 收到已读回执
+                for (EMMessage message : messages) {
+
+                    EMTextMessageBody body = (EMTextMessageBody) message.getBody();
+                    Map<String, Object> event = new HashMap<>();
+                    event.put("id", message.getMsgId());
+                    event.put("from", message.getFrom());
+                    event.put("to", message.getTo());
+                    event.put("eventType", "onMessageRead");
+                    event.put("body", body.getMessage());
+                    event.put("chatType", message.getChatType().toString());
+                    event.put("timestamp", message.getMsgTime());
+                    event.put("ext", new JSONObject(message.ext()).toString());
+                    event.put("type", message.getType().toString());
+                    eventSink.success(event);
+                }
             }
 
             @Override
             public void onMessageDelivered(List<EMMessage> messages) {
                 // 收到已送到回执
+                for (EMMessage message : messages) {
+
+                    EMTextMessageBody body = (EMTextMessageBody) message.getBody();
+                    Map<String, Object> event = new HashMap<>();
+                    event.put("id", message.getMsgId());
+                    event.put("from", message.getFrom());
+                    event.put("to", message.getTo());
+                    event.put("eventType", "onMessageDelivered");
+                    event.put("body", body.getMessage());
+                    event.put("chatType", message.getChatType().toString());
+                    event.put("timestamp", message.getMsgTime());
+                    event.put("ext", new JSONObject(message.ext()).toString());
+                    event.put("type", message.getType().toString());
+                    eventSink.success(event);
+                }
             }
 
             @Override
             public void onMessageChanged(EMMessage message, Object change) {
+                    EMTextMessageBody body = (EMTextMessageBody) message.getBody();
+                    Map<String, Object> event = new HashMap<>();
+                    event.put("id", message.getMsgId());
+                    event.put("from", message.getFrom());
+                    event.put("to", message.getTo());
+                    event.put("eventType", "onMessageChanged");
+                    event.put("body", body.getMessage());
+                    event.put("chatType", message.getChatType().toString());
+                    event.put("timestamp", message.getMsgTime());
+                    event.put("ext", new JSONObject(message.ext()).toString());
+                    event.put("type", message.getType().toString());
+                    eventSink.success(event);
 
             }
         };
@@ -168,6 +225,9 @@ public class EasemobClient {
         result.success(true);
     }
 
+    /*
+         获取会话消息
+     */
     public  ArrayList<Map<String, String>> getConversationMessages(String conversation, String startMessageId, int pageSize) {
         EMConversation emConversation = EMClient.getInstance().chatManager().getConversation(conversation);
         if (emConversation == null) {
@@ -182,7 +242,7 @@ public class EasemobClient {
             event.put("from", message.getFrom());
             event.put("to", message.getTo());
             event.put("eventType", "onMessageReceived");
-            event.put("body", body.toString());
+            event.put("body", body.getMessage());
             event.put("chatType", message.getChatType().toString());
             event.put("timestamp", Long.toString(message.getMsgTime()));
             event.put("ext", new JSONObject(message.ext()).toString());
@@ -190,6 +250,27 @@ public class EasemobClient {
             messages.add(event);
         }
         return messages;
+    }
+
+    /*
+        将会话的所有消息设置为已读
+     */
+    public void markConversatioAllMessagesAsRead(String conversation) {
+        EMClient.getInstance().chatManager().getConversation(conversation).markAllMessagesAsRead();
+    }
+
+    /*
+        将所有消息设置为已读
+     */
+    public void markAllMessagesAsRead() {
+        EMClient.getInstance().chatManager().markAllConversationsAsRead();
+    }
+
+    /*
+        将会话某条消息设为已读
+     */
+    public void markConversationsMessageAsRead(String conversation, String messageId) {
+        EMClient.getInstance().chatManager().getConversation(conversation).markMessageAsRead(messageId);
     }
 
 

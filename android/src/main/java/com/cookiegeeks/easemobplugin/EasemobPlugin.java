@@ -38,6 +38,7 @@ public class EasemobPlugin implements MethodCallHandler, StreamHandler {
         String toChatUsername=call.argument("toChatUsername");
         Boolean isGroupChat= call.argument("isGroupChat")==null?false:(Boolean)call.argument("isGroupChat");
         String conversation = call.argument("conversation");
+        String messageId = call.argument("messageId");
         switch (call.method) {
             case "init":
                 String appKey = call.argument("appKey");
@@ -74,6 +75,19 @@ public class EasemobPlugin implements MethodCallHandler, StreamHandler {
                 int pageSize = call.argument("pageSize");
                 result.success(easemobClient.getConversationMessages(conversation, startMessageId, pageSize));
                 break;
+
+            case "markConversatioAllMessagesAsRead":
+                easemobClient.markConversatioAllMessagesAsRead(conversation);
+                break;
+
+            case "markAllMessagesAsRead":
+                easemobClient.markAllMessagesAsRead();
+                break;
+
+            case "markConversationsMessageAsRead":
+                easemobClient.markConversationsMessageAsRead(conversation, messageId);
+                break;
+
             default:
                 result.notImplemented();
         }
