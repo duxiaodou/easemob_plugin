@@ -12,6 +12,7 @@ import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.chat.EMConversation;
+import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.util.EMLog;
 
 import org.json.JSONObject;
@@ -29,6 +30,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
  */
 public class EasemobClient {
     private final String TAG = "EasemobPlugin";
+    static EMClient emClient;
 
 
     /*
@@ -38,9 +40,11 @@ public class EasemobClient {
         EMOptions options = new EMOptions();
         options.setAppKey(appKey);
         options.setAcceptInvitationAlways(false);
+        options.setDeleteMessagesAsExitGroup(false);
         options.setRequireAck(true);
-        EMClient.getInstance().init(context, options);
-        EMClient.getInstance().setDebugMode(isDebug);
+        emClient = EMClient.getInstance();
+        emClient.init(context, options);
+        emClient.setDebugMode(isDebug);
         return true;
     }
 
@@ -48,7 +52,7 @@ public class EasemobClient {
         登录
      */
     public void login(final String username, final String password, final Result result) {
-        EMClient.getInstance().login(username, password, new EMCallBack() {//回调
+        emClient.login(username, password, new EMCallBack() {//回调
             @Override
             public void onSuccess() {
                 EMClient.getInstance().groupManager().loadAllGroups();
@@ -72,7 +76,7 @@ public class EasemobClient {
         退出
      */
     public void logout(boolean isUnbundle, final Result result) {
-        EMClient.getInstance().logout(isUnbundle, new EMCallBack() {
+        emClient.logout(isUnbundle, new EMCallBack() {
 
             @Override
             public void onSuccess() {
@@ -124,13 +128,13 @@ public class EasemobClient {
                 // 收到已透传回执
                 for (EMMessage message : messages) {
 
-                    EMTextMessageBody body = (EMTextMessageBody) message.getBody();
+                    EMCmdMessageBody body = (EMCmdMessageBody) message.getBody();
                     Map<String, Object> event = new HashMap<>();
                     event.put("id", message.getMsgId());
                     event.put("from", message.getFrom());
                     event.put("to", message.getTo());
-                    event.put("eventType", "onMessageReceived");
-                    event.put("body", body.getMessage());
+                    event.put("eventType", "onCmdMessageReceived");
+                    event.put("body", body.action());
                     event.put("chatType", message.getChatType().toString());
                     event.put("timestamp", message.getMsgTime());
                     event.put("ext", new JSONObject(message.ext()).toString());
@@ -203,14 +207,32 @@ public class EasemobClient {
         获取会话未读消息数量
      */
     public void getConversationUnreadMessageCount(String conversation, final Result result) {
-        result.success(EMClient.getInstance().chatManager().getConversation(conversation).getUnreadMsgCount());
+        EMConversation emConversation = EMClient.getInstance().chatManager().getConversation(conversation);
+        if (emConversation == null) {
+            result.success(0);
+        } else {
+            result.success(emConversation.getUnreadMsgCount());
+        }
+    }
+
+    /*
+        获取会话消息数量
+     */
+    public void getConversationAllMessageCount(String conversation, final Result result) {
+        EMConversation emConversation = emClient.chatManager().getConversation(conversation);
+        if (emConversation == null) {
+            result.success(0);
+        } else {
+            result.success(emConversation.getAllMsgCount());
+        }
+
     }
 
     /*
         获取未读消息数量
      */
     public void getUnreadMessageCount(final Result result) {
-        result.success(EMClient.getInstance().chatManager().getUnreadMsgsCount());
+        result.success(emClient.chatManager().getUnreadMsgsCount());
     }
 
     /*
@@ -229,11 +251,15 @@ public class EasemobClient {
          获取会话消息
      */
     public  ArrayList<Map<String, String>> getConversationMessages(String conversation, String startMessageId, int pageSize) {
-        EMConversation emConversation = EMClient.getInstance().chatManager().getConversation(conversation);
+        EMConversation emConversation = emClient.chatManager().getConversation(conversation);
         if (emConversation == null) {
             return null;
         }
+
         List<EMMessage> unConvertedMessages = emConversation.getAllMessages();
+        if ( unConvertedMessages.isEmpty() ) {
+            unConvertedMessages = emConversation.loadMoreMsgFromDB(startMessageId, pageSize);
+        }
         ArrayList<Map<String, String>> messages = new ArrayList<Map<String, String>>();
         for ( EMMessage message :  unConvertedMessages) {
             EMTextMessageBody body = (EMTextMessageBody) message.getBody();
@@ -256,21 +282,21 @@ public class EasemobClient {
         将会话的所有消息设置为已读
      */
     public void markConversatioAllMessagesAsRead(String conversation) {
-        EMClient.getInstance().chatManager().getConversation(conversation).markAllMessagesAsRead();
+        emClient.chatManager().getConversation(conversation).markAllMessagesAsRead();
     }
 
     /*
         将所有消息设置为已读
      */
     public void markAllMessagesAsRead() {
-        EMClient.getInstance().chatManager().markAllConversationsAsRead();
+        emClient.chatManager().markAllConversationsAsRead();
     }
 
     /*
         将会话某条消息设为已读
      */
     public void markConversationsMessageAsRead(String conversation, String messageId) {
-        EMClient.getInstance().chatManager().getConversation(conversation).markMessageAsRead(messageId);
+        emClient.chatManager().getConversation(conversation).markMessageAsRead(messageId);
     }
 
 

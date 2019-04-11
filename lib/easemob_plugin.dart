@@ -80,6 +80,14 @@ class EasemobPlugin {
   }
 
   /*
+    获取会话所有消息数量
+   */
+  static Future<int> getConversationAllMessageCount(String conversation) async {
+      return await _methodChannel
+          .invokeMethod("getConversationAllMessageCount", {"conversation": conversation});
+  }
+
+  /*
     获取未读消息数量
    */
   static Future<int> getUnreadMessageCount() async {
